@@ -1,0 +1,80 @@
+
+一些关于生成随机数和随机矩阵的方法，顺便画了一个三维的图
+import numpy as np        #导入相应的包
+import pymongo
+from bson.binary import Binary
+import pickle
+import pandas
+import matplotlib as mpl
+import matplotlib.pyplot as plt
+from mpl_toolkits.mplot3d import Axes3D
+
+'''
+#下面是创建矩阵的一些方法
+matrix1 = np.random.rand(10,8)       #随机生成一个10*8的矩阵，值在（0，1）之间
+matrix2= np.random.rand(4,3,2)       #随机生成4个3*2的矩阵,相当于创建一个多维矩阵
+#print(matrix1)
+#print(matrix2)
+
+matrix3 = np.random.randn(2,4)       #随机生成一个2*4的矩阵，值存在负数，具有标准正态分布的特性
+matrix4 = np.random.randn(4,3,2)     #随机生成4个3*2的矩阵,值存在负数，具有标准正态分布的特性
+#print(matrix3)
+#print(matrix4)
+
+
+matrix5 = np.random.randint(1,10,size=(100,100)) #生成一个元素值位1-10之间的大小为100*100的矩阵
+print(matrix5)
+matrix5_add_row = np.random.randint(1,10,size=(1,100))  #产生一个新的行矩阵,注意此处的大小是在一行上增加100列
+matrix5_add_line= np.random.randint(1,10, size=(1,1))    #产生一个列矩阵，这里出了点毛病，暂未解决
+new_matrix5 = np.insert(matrix5, 0, values=matrix5_add_row, axis=0)  #将行矩阵插入到已有的矩阵当中,第一个参数表示已有矩阵，第二个参数表示要插入的位置，第三个参数是需要插入的矩阵，第四个参数是插入行还是列
+print(new_matrix5)                                       #输出插入行后的矩阵
+print(new_matrix5.shape)                                 #输出新的矩阵的大小
+new1_matrix5= np.insert(new_matrix5,0,values=matrix5_add_line,  axis=1) #将列矩阵插入到已有的矩阵当中
+print(new1_matrix5)                                         #输出插入列后的矩阵
+print(new1_matrix5.shape)                                   #输出新的矩阵的大小
+
+#生成值在0-1之间的随机浮点数
+f1= np.random.random_sample(size=(3,2))
+f2 = np.random.random(size=(2,2))
+f3= np.random.ranf(size=(2,2))
+f4 = np.random.sample(size=(2,2))
+print(f1)
+print(f2)
+print(f3)
+print(f4)
+'''
+random_data = np.random.randint(0, 255, size=[40, 40, 40])
+client=pymongo.MongoClient('localhost',12345)    #连接到数据库
+db=client.test                                     #指定相应的数据库,如果不存在，则创建该数据库
+collection=db.matrix                               #指定相应的集合，如果不存在，则创建相应的集合
+#将创建好的矩阵存入到MongoDB数据库，protocol=-1是使用pickle.dumps的最新协议来dump数据，而subtype=128表示Binary的用户自定义二进制格式
+collection.insert_one({'matrix_binary' : Binary(pickle.dumps(random_data, protocol=-1), subtype=128)})
+data = collection.find_one()
+my_db_matrix = pickle.loads(data['matrix_binary'])         #取出数据库里面的矩阵，得到一个与存入时一样的矩阵
+print(my_db_matrix)
+x, y, z = my_db_matrix[0], my_db_matrix[1], my_db_matrix[2]
+ax = plt.subplot(111,projection='3d')  # 创建一个三维的绘图工程
+#  将数据点分成三部分画，在颜色上有区分度
+ax.scatter(x[:10], y[:10], z[:10], c='y')  # 绘制数据点
+ax.scatter(x[10:20], y[10:20], z[10:20], c='r')
+ax.scatter(x[30:40], y[30:40], z[30:40], c='g')
+
+ax.set_zlabel('Z')  # 坐标轴
+ax.set_ylabel('Y')
+ax.set_xlabel('X')
+plt.show()
+
+
+
+
+
+
+
+
+'''
+#以下是python遍历矩阵的方法
+for row in my_db_matrix:                                  #逐行遍历矩阵，并按行输出矩阵
+    print(row)
+for element in my_db_matrix.flat:                         # 逐元素迭代，从左到右，从上到下
+    print(element)
+'''
