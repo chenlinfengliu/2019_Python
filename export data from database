@@ -1,0 +1,17 @@
+# 导入相关模块
+import pymongo
+import pandas as pd
+
+# 连接数据库
+client = pymongo.MongoClient('localhost', 12345)
+db = client['linfengchen']
+table = db['text']
+
+# 读取数据
+data = pd.DataFrame(list(table.find()))
+
+# 选择需要显示的字段
+data = data[['doublenumber', 'intnumber']]
+
+# 打印输出
+print(data)
